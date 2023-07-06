@@ -29,6 +29,21 @@ class Mvl(generics.GenericAPIView):
         serializer = self.serializer_class(paginated_notes, many=True)
         # print(type(paginator.get_paginated_response(serializer.data)))
         return paginator.get_paginated_response(serializer.data)
+    # def get(self, request):
+    #     # notes = MvModel.objects.all()
+    #     notes = self.filter_queryset(self.get_queryset())
+    #     if request.GET.get('form_size'):
+    #         paginator = CustomPage()
+    #         paginated_notes = paginator.paginate_queryset(notes, request)
+    #         serializer = self.serializer_class(paginated_notes, many=True)
+    #         return paginator.get_paginated_response(serializer.data)
+   
+    #     else:
+    #         serializer = self.serializer_class(MvModel.objects.all(),many=True)
+    #         return Response({"status": "success", "data": {"note": serializer.data}}, status=status.HTTP_200_OK)
+
+        # print(type(paginator.get_paginated_response(serializer.data)))
+        
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -41,6 +56,7 @@ class Mvl(generics.GenericAPIView):
 
 class MvDetail(generics.GenericAPIView):
 # queryset = NoteModel.objects.all()
+    # permission_classes = (IsAuthenticated,)
     serializer_class = MvSerializer
     def get_mv(self, pk):
         try:
@@ -59,7 +75,7 @@ class MvDetail(generics.GenericAPIView):
             return Response({"status": "fail", "message": f"Note with Id: {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(
             rec, data=request.data, partial=True)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             # serializer.validated_data['updatedAt'] = datetime.now()
             serializer.save()
             return Response({"status": "success", "data": {"note": serializer.data}})
