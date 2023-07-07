@@ -20,15 +20,42 @@ class Mvl(generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
     filter_backends = [filters.SearchFilter]
     search_fields = ['genre', 'director']
-
+    paginator = CustomPage()
+    # def get(self, request):
+    #     # notes = MvModel.objects.all()
+    #     if not request.query_params.get('page_size'):
+    #         return Response({"message": "page_size parameter is missing"}, status=status.HTTP_400_BAD_REQUEST)
+    #     notes = self.filter_queryset(self.get_queryset())
+    #     paginator = CustomPage()
+    #     paginated_notes = paginator.paginate_queryset(notes, request)
+    #     serializer = self.serializer_class(paginated_notes, many=True)
+    #     # print(type(paginator.get_paginated_response(serializer.data)))
+    #     return paginator.get_paginated_response(serializer.data)
     def get(self, request):
-        # notes = MvModel.objects.all()
-        notes = self.filter_queryset(self.get_queryset())
-        paginator = CustomPage()
-        paginated_notes = paginator.paginate_queryset(notes, request)
-        serializer = self.serializer_class(paginated_notes, many=True)
-        # print(type(paginator.get_paginated_response(serializer.data)))
-        return paginator.get_paginated_response(serializer.data)
+        
+
+        if request.query_params.get('search'):
+            notes = self.filter_queryset(self.get_queryset())
+        else:
+            notes = MvModel.objects.all()
+        if request.query_params.get('page_size'):
+            self.paginator.page_size = int(request.query_params.get('page_size'))
+            paginated_notes = self.paginate_queryset(notes)
+            serializer = self.serializer_class(paginated_notes, many=True)
+            return self.get_paginated_response(serializer.data)
+        else:
+            serializer = self.serializer_class(notes, many=True)
+            return Response({"count":len(serializer.data),"data":{"Movie":serializer.data}},status=status.HTTP_200_OK)
+
+        # if form_size is not None:
+        #     self.paginator.page_size = int(form_size)
+
+        
+        # serializer = self.serializer_class(paginated_notes, many=True)
+
+        # return self.get_paginated_response(serializer.data)
+
+
     # def get(self, request):
     #     # notes = MvModel.objects.all()
     #     notes = self.filter_queryset(self.get_queryset())

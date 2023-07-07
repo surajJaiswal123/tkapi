@@ -7,7 +7,7 @@ from rest_framework.test import APIRequestFactory,force_authenticate,APITestCase
 
 from .models import MvModel
 from .serializers import MvSerializer
-from .views import MvDetail
+from .views import MvDetail,Mvl
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 
@@ -76,6 +76,7 @@ User = get_user_model()
 #         )
 
 class MvDetailTestCase(APITestCase):
+
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = User.objects.create_user(username='testuser', password='testpassword')
@@ -87,6 +88,7 @@ class MvDetailTestCase(APITestCase):
             director="surya"
         )
         self.url = f"/api/mv/{self.mv.pk}/"
+        self.url1 = f"/api/mv/"
 
     def test_get_existing_mv(self):
         request = self.factory.get(self.url)
@@ -140,3 +142,26 @@ class MvDetailTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data["status"], "fail")
         self.assertEqual(response.data["message"], "Note with Id: 999 not found")
+    
+    def test_mvl_api(self):
+        request = self.factory.get(self.url1)
+        force_authenticate(request,user=self.user,token=self.token)
+        view = Mvl.as_view()
+        response = view(request)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_mvl_post_api(self):
+        request = self.factory.post(self.url1,data={"title":"Test title","genre":"test","release_date":"2023-07-07","director":"test"})
+        force_authenticate(request,user=self.user,token=self.token)
+        view= Mvl.as_view()
+        response = view(request)
+        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
+        self.assertEqual(response.data["status"],"success")        
+
+# class MovieTestCase(APITestCase):
+#     def __init__(self):
+#         self
+#         self.url= f"/api/mv/"
+
+#     def test_mvl_api(self):
+#         request = self.factory.get(url)
